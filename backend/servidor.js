@@ -5,7 +5,12 @@ const app = express()
 
 const porta = process.env.PORTA
 
+const rotasTarefas = require('./src/routes/rotasTarefas');
+
+app.use(express.json());
+app.use('/tarefas', rotasTarefas);
 // Rota de teste
+
 app.get('/', (req, res) => {
   res.send('Olá Mundo!')
 })
