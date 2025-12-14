@@ -1,35 +1,71 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tarefas, setTarefas] = useState([]);
+  const [novaTarefa, setNovaTarefa] = useState("");
+  const api = "http://localhost:3000/tarefas";
+
+  // Carrega tarefas ao iniciar
+  useEffect(() => {
+    buscarTarefas();
+  }, []);
+
+  const buscarTarefas = async () => {
+    const res = await axios.get(api);
+    setTarefas(res.data);
+  };
+
+  const adicionarTarefa = async () => {
+    if (!novaTarefa.trim()) return;
+    await axios.post(api, { titulo: novaTarefa });
+    setNovaTarefa("");
+    buscarTarefas();
+  };
+
+  const alternarStatus = async (id, concluida) => {
+    await axios.put(`${api}/${id}`, { concluida: !concluida });
+    buscarTarefas();
+  };
+
+  const removerTarefa = async (id) => {
+    await axios.delete(`${api}/${id}`);
+    buscarTarefas();
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div style={{ margin: "40px auto", width: "400px", textAlign: "center" }}>
+      <h2>📋 Minhas Tarefas</h2>
+
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          type="text"
+          value={novaTarefa}
+          onChange={(e) => setNovaTarefa(e.target.value)}
+          placeholder="Digite uma nova tarefa"
+        />
+        <button onClick={adicionarTarefa}>Adicionar</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {tarefas.map((t) => (
+          <li key={t.id} style={{ margin: "10px 0" }}>
+            <span
+              onClick={() => alternarStatus(t.id, t.concluida)}
+              style={{
+                textDecoration: t.concluida ? "line-through" : "none",
+                cursor: "pointer",
+                marginRight: "10px",
+              }}
+            >
+              {t.titulo}
+            </span>
+            <button onClick={() => removerTarefa(t.id)}>❌</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
