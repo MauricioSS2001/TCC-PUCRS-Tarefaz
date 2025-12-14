@@ -4,7 +4,7 @@ const express = require('express')
 
 const app = express()
 
-const porta = process.env.PORTA
+const porta = process.env.PORTA_BACKEND
 
 const rotasTarefas = require('./src/routes/rotasTarefas');
 

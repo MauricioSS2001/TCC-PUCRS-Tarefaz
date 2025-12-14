@@ -4,32 +4,60 @@ import axios from "axios";
 function App() {
   const [tarefas, setTarefas] = useState([]);
   const [novaTarefa, setNovaTarefa] = useState("");
-  const api = "http://localhost:3000/tarefas";
+  //const api = import.meta.env.PORTA_FRONTEND + "/tarefas";
+  const API = import.meta.env.VITE_API_URL;
 
   // Carrega tarefas ao iniciar
   useEffect(() => {
     buscarTarefas();
   }, []);
 
-  const buscarTarefas = async () => {
-    const res = await axios.get(api);
-    setTarefas(res.data);
-  };
+const buscarTarefas = async () => {
+  try {
+    const resposta = await fetch(`${API}/tarefas`);
+
+    const raw = await resposta.text();
+    console.log("RAW RESPONSE:", raw);
+
+    let json;
+    try {
+      json = JSON.parse(raw);
+    } catch (e) {
+      console.error("ERRO: Backend não retornou JSON válido!");
+      setTarefas([]);
+      return;
+    }
+
+    console.log("JSON PARSED:", json);
+    console.log("É array?", Array.isArray(json));
+
+    if (!Array.isArray(json)) {
+      console.error("ERRO: Backend retornou algo que NÃO é array!");
+      setTarefas([]);
+      return;
+    }
+
+    setTarefas(json);
+  } catch (erro) {
+    console.error("Erro ao buscar tarefas:", erro);
+    setTarefas([]);
+  }
+};
 
   const adicionarTarefa = async () => {
     if (!novaTarefa.trim()) return;
-    await axios.post(api, { titulo: novaTarefa });
+    await axios.post(`${API}/tarefas`, { titulo: novaTarefa });
     setNovaTarefa("");
     buscarTarefas();
   };
 
   const alternarStatus = async (id, concluida) => {
-    await axios.put(`${api}/${id}`, { concluida: !concluida });
+    await axios.put(`${API}/tarefas/${id}`, { concluida: !concluida });
     buscarTarefas();
   };
 
   const removerTarefa = async (id) => {
-    await axios.delete(`${api}/${id}`);
+    await axios.delete(`${API}/tarefas/${id}`);
     buscarTarefas();
   };
 
